@@ -44,7 +44,7 @@ def process_csv_file(file_path, common_headers, table_name):
             # Insert the data into the table
             for row in csv_reader:
                 #cursor.execute(f"INSERT INTO {os.path.splitext(os.path.basename(file_path))[0]} ({', '.join(headers)}) VALUES ({', '.join(['?' for _ in headers])})", row)
-                cursor.execute(f"INSERT INTO {os.path.splitext(os.path.basename(file_path))[0]} ({', '.join(headers)}) VALUES ({', '.join(['?' for _ in headers])})", row)
+                cursor.execute(f"INSERT INTO {table_name} ({', '.join(headers)}) VALUES ({', '.join(['?' for _ in headers])})", row)
         else:
             if missing_headers:
                 print(f"Skipping file \033[1;93m{file_path}\033[0m with missing columns: \033[1;96m{', '.join(missing_headers)}\033[0m")
