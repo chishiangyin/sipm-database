@@ -12,7 +12,7 @@ elif not os.path.isfile('sipm_database.db'):
 else:
     answer = input("sipm_database.db already exists. delete? (Y/N)").upper()
     if answer == 'Y':
-        #os.system('rm sipm_database.db')
+        os.system('rm sipm_database.db')
         database_path = 'sipm_database.db'
     else:
         exit()
@@ -21,6 +21,29 @@ conn = sqlite3.connect(database_path)
 cursor = conn.cursor()
 
 table_name = os.path.splitext(os.path.basename(path))[0]
+
+def get_column_names_and_types(cursor, file_path):
+    """
+    Retrieves the column names and data types from the first row of the CSV file.
+    """
+    with open(file_path, 'r') as csv_file:
+        csv_reader = csv.reader(csv_file)
+        headers = next(csv_reader)
+
+        # Determine the data types for each column
+        column_types = []
+        for row in csv_reader:
+            for i, value in enumerate(row):
+                try:
+                    float(value)
+                    column_types.append('REAL')
+                    break
+                except ValueError:
+                    column_types.append('TEXT')
+                    break
+
+    return headers, column_types
+
 def process_csv_file(file_path, common_headers, table_name):
     """
     Processes a CSV file and adds its data to the SQLite3 database.
@@ -28,6 +51,9 @@ def process_csv_file(file_path, common_headers, table_name):
     with open(file_path, 'r') as csv_file:
         csv_reader = csv.reader(csv_file)
         headers = next(csv_reader)  # Get the column headers
+        headers, column_types = get_column_names_and_types(cursor, file_path)
+        print(headers)
+        print(column_types)
 
         # Check if the headers are consistent with the common headers
         if not common_headers is None:
@@ -39,7 +65,10 @@ def process_csv_file(file_path, common_headers, table_name):
 
         if not missing_headers and not extra_headers:
             # Create the table with the appropriate column names
-            cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} ({', '.join([f'{h} TEXT' for h in headers])})")
+            #cursor.execute(f"CREATE TABLE IF NOT EXISTS {table_name} ({', '.join([f'{h} TEXT' for h in headers])})")
+            create_table_query = f"CREATE TABLE IF NOT EXISTS {table_name} ({', '.join([f'{h} {t}' for h, t in zip(headers, column_types)])})"
+            cursor.execute(create_table_query)
+  
 
             # Insert the data into the table
             for row in csv_reader:
