@@ -1,4 +1,6 @@
 import sqlite3
+import sys
+
 from predefined_colors import *
 
 def get_column_names(cursor, table_name):
@@ -33,6 +35,8 @@ def show_values(cursor, table_name):
 
     print("Enter the selection conditions (e.g., column1 > 3 and column5 == 4):")
     selection_conditions = input().split(" and ")
+ # Define the specific condition
+    
 
     # Build the SQL query
     query = f"SELECT {', '.join(selected_columns)} FROM {table_name} WHERE "
@@ -40,7 +44,7 @@ def show_values(cursor, table_name):
 
     header_str = '\033[1;93m'
     first = 0
-    for col in column_names:
+    for col in selected_columns:
         if not first==0:
             header_str += '\t'
         first += 1
@@ -62,7 +66,7 @@ def show_values(cursor, table_name):
 
 def main():
     # Connect to the SQLite3 database
-    conn = sqlite3.connect('sipm_database.db')
+    conn = sqlite3.connect(sys.argv[1])
     cursor = conn.cursor()
 
     # Get the table name
